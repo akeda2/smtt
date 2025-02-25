@@ -3,9 +3,11 @@ SMT & turbo on/off
 
 ### Usage
 ```
-smtt on|off|get|t
+smtt on|off|t
 turbot on|off|t
-When run with no options, prints current status.
+
+'t' toggles
+When run with no options, both print current status.
 ```
 ### Install
 ```
