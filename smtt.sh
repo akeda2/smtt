@@ -19,7 +19,9 @@ if [[ ! -z "$1" ]]; then
 	        	&& { echo "...to on!" ;} \
         		|| { echo "...to off!" ;}
 
+	elif [[ "$1" == "h" ]]; then
+		echo "Usage: smtt on|off|t"; exit
 	fi
 else
-	echo "Usage: smtt on|off|t"; exit
+	get_state && exit 0 || exit 1
 fi
