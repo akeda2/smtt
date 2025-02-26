@@ -2,12 +2,8 @@
 # Toggle turbo on/off
 TURBO_OFFSTATE="$(cat /sys/devices/system/cpu/intel_pstate/no_turbo)"
 
-turbo_on(){
-	echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo > /dev/null
-}
-turbo_off(){
-	echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo > /dev/null
-}
+turbo_on(){ echo 0 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo > /dev/null;}
+turbo_off(){ echo 1 | sudo tee /sys/devices/system/cpu/intel_pstate/no_turbo > /dev/null;}
 print_status(){
 	TURBO_OFFSTATE="$(cat /sys/devices/system/cpu/intel_pstate/no_turbo)"
 	[[ $TURBO_OFFSTATE == 1 ]] && echo "Turbo off" || echo "Turbo on"
