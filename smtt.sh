@@ -23,4 +23,4 @@ if [[ ! -z "$1" ]]; then
 		echo "Usage: smtt on|off|t, leave empty for status."; exit
 	fi
 fi
-RETURN_STATE=$(get_state); [[ $RETURN_STATE == 1 ]] && { echo "SMT on"; exit 0;} || { echo "Turbo off"; exit 1;}
+RETURN_STATE=$(get_state); [[ $RETURN_STATE == 1 ]] && { echo "SMT on"; exit 0;} || { echo "SMToff"; exit 1;}
