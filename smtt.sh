@@ -20,9 +20,7 @@ if [[ ! -z "$1" ]]; then
         		|| { echo "...to off!" ;}
 
 	elif [[ "$1" == "h" ]]; then
-		echo "Usage: smtt on|off|t"; exit
+		echo "Usage: smtt on|off|t, leave empty for status."; exit
 	fi
-else
-	STATE=$(get_state)
-	[[ $STATE == 1 ]] && { echo "SMT on"; exit 0;} || { echo "Turbo off"; exit 1;}
 fi
+RETURN_STATE=$(get_state); [[ $RETURN_STATE == 1 ]] && { echo "SMT on"; exit 0;} || { echo "Turbo off"; exit 1;}
