@@ -9,6 +9,8 @@ sockt - offline target sockets and cap online CPUs per socket
 smtt on|off|t
 turbot on|off|t
 
+Both also accept: get, h, -h, --help
+
 't' toggles
 When run with no options, both print current status.
 ```
@@ -61,6 +63,15 @@ sudo sockt.sh -r
 
 ### Install
 ```
-./inst.sh
+sudo ./inst.sh
 Installs all above to /usr/local/bin
+```
+
+### Quick Self-Test
+```
+chmod +x ./selftest.sh
+./selftest.sh
+
+# Verbose mode (shows command output for passing tests)
+./selftest.sh -v
 ```

@@ -79,9 +79,14 @@ status() {
     mapfile -t ds < <(dirs_by_socket "$s")
     up=() dn=(); for d in "${ds[@]}"; do is_up "$d" && up+=("$(cid "$d")") || dn+=("$(cid "$d")"); done
     printf "Socket %d : %d online, %d offline\n" "$s" "${#up[@]}" "${#dn[@]}"
-    [[ ${up[*]} ]] && echo "  Online : ${up[*]}"
-    [[ ${dn[*]} ]] && echo "  Offline: ${dn[*]}"
+    if [[ ${#up[@]} -gt 0 ]]; then
+      echo "  Online : ${up[*]}"
+    fi
+    if [[ ${#dn[@]} -gt 0 ]]; then
+      echo "  Offline: ${dn[*]}"
+    fi
   done
+  return 0
 }
 
 socketoff() {               # offline all CPUs on a target socket
@@ -121,7 +126,7 @@ limit_socket() {                # keep $2 online on socket $1
   for d in "${s0[@]}"; do
     if (( kept < keep )); then
       set_state "$d" 1
-      (( kept++ ))
+      (( ++kept ))
     else
       set_state "$d" 0
     fi

@@ -1,26 +1,75 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # SMT-toggle
 
+set -u
+
 CONTROL=/sys/devices/system/cpu/smt/control
+ACTIVE=/sys/devices/system/cpu/smt/active
 
-get_state() { local SMT_STATE=$(cat /sys/devices/system/cpu/smt/active); echo $SMT_STATE ;}
-set_state() { echo "$1" | sudo tee "$CONTROL" > /dev/null && return || false ;}
-we_failed() { echo "FAIL"; exit 1 ;}
-if [[ ! -z "$1" ]]; then
-	if [[ "$1" == "on" || "$1" == "off" ]]; then
-		set_state "$1" && get_state && exit 0 || exit 1
-	elif [[ "$1" == "get" ]]; then
-		get_state && exit 0 || exit 1
-	elif [[ "$1" == "t" ]]; then
-		[[ $(get_state) -eq 1 ]] \
-			&& { echo "From on..."; set_state 'off' || we_failed ;} \
-			|| { echo "From off...!"; set_state 'on' || we_failed ;}
-		[[ $(get_state) -eq 1 ]] \
-	        	&& { echo "...to on!" ;} \
-        		|| { echo "...to off!" ;}
+usage() {
+	echo "Usage: smtt [on|off|t|get|h]"
+	echo "When run with no args, prints state and exits 0 if on, 1 if off."
+}
 
-	elif [[ "$1" == "h" ]]; then
-		echo "Usage: smtt on|off|t, leave empty for status."; exit
-	fi
+die() { echo "ERROR: $*" >&2; exit 1; }
+
+get_state() {
+	local smt_state
+	smt_state=$(<"$ACTIVE")
+	echo "$smt_state"
+}
+
+require_root() {
+	(( EUID == 0 )) || die "run as root (try: sudo smtt ...)"
+}
+
+set_state() {
+	local target=$1
+	echo "$target" > "$CONTROL"
+}
+
+case "${1:-}" in
+	"") ;;
+	on|off)
+		require_root
+		set_state "$1"
+		get_state
+		exit 0
+		;;
+	get)
+		get_state
+		exit 0
+		;;
+	t)
+		require_root
+		if [[ $(get_state) -eq 1 ]]; then
+			echo "From on..."
+			set_state off
+		else
+			echo "From off...!"
+			set_state on
+		fi
+		if [[ $(get_state) -eq 1 ]]; then
+			echo "...to on!"
+		else
+			echo "...to off!"
+		fi
+		;;
+	h|-h|--help)
+		usage
+		exit 0
+		;;
+	*)
+		usage
+		die "invalid argument: $1"
+		;;
+esac
+
+return_state=$(get_state)
+if [[ $return_state == 1 ]]; then
+	echo "SMT on"
+	exit 0
+else
+	echo "SMT off"
+	exit 1
 fi
-RETURN_STATE=$(get_state); [[ $RETURN_STATE == 1 ]] && { echo "SMT on"; exit 0;} || { echo "SMT off"; exit 1;}

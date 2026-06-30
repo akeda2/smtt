@@ -1,5 +1,26 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-sudo install -m 755 smtt.sh /usr/local/bin/smtt && echo "smtt install SUCCESS!" || echo "smtt install FAIL!"
-sudo install -m 755 turbot.sh /usr/local/bin/turbot && echo "turbot install SUCCESS!" || echo "turbot install FAIL!"
-sudo install -m 755 sockt.sh /usr/local/bin/sockt && echo "sockt install SUCCESS!" || echo "sockt install FAIL!"
+set -u
+
+failed=0
+
+install_one() {
+	local src=$1 dst=$2 name=$3
+	if install -m 755 "$src" "$dst"; then
+		echo "$name install SUCCESS!"
+	else
+		echo "$name install FAIL!" >&2
+		failed=1
+	fi
+}
+
+if (( EUID != 0 )); then
+	echo "ERROR: run as root (try: sudo ./inst.sh)" >&2
+	exit 1
+fi
+
+install_one smtt.sh /usr/local/bin/smtt smtt
+install_one turbot.sh /usr/local/bin/turbot turbot
+install_one sockt.sh /usr/local/bin/sockt sockt
+
+exit "$failed"
