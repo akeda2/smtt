@@ -17,6 +17,9 @@ When run with no options, both print current status.
    -l <N>    Limit socket 0 to <N> online CPUs
    -r        Restore all CPUs to online state
    -s        Offline all CPUs on socket 1
+   -h        Show help
+
+Mutating operations (-l/-r/-s) require root privileges.
 When run with no options, prints current status
 ```
 ### Install
