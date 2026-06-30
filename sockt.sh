@@ -45,7 +45,8 @@ dirs_by_socket() {
 }
 
 status() {
-  for s in 0 1; do
+  mapfile -t sockets < <(for d in $(cpu_dirs); do [[ -f $d/topology/physical_package_id ]] && sid "$d"; done | sort -n -u)
+  for s in "${sockets[@]}"; do
     mapfile -t ds < <(dirs_by_socket "$s")
     up=() dn=(); for d in "${ds[@]}"; do is_up "$d" && up+=("$(cid "$d")") || dn+=("$(cid "$d")"); done
     printf "Socket %d : %d online, %d offline\n" "$s" "${#up[@]}" "${#dn[@]}"
@@ -90,6 +91,10 @@ while getopts ":l:rsh" o; do
     *) usage; die "invalid option: -$OPTARG" ;;
   esac
 done
+
+if [[ ${R:-0} -eq 1 && -n ${L:-} ]]; then
+  die "-r cannot be combined with -l"
+fi
 
 if [[ ${R:-0} -ne 0 || -n ${L:-} ]]; then
   (( EUID == 0 )) || die "run as root (try: sudo sockt.sh ...)"

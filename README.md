@@ -20,6 +20,8 @@ When run with no options, both print current status.
    -h        Show help
 
 Mutating operations (-l/-r/-s) require root privileges.
+`-r` cannot be combined with `-l`.
+Status output shows all detected sockets.
 When run with no options, prints current status
 ```
 ### Install
