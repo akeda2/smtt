@@ -46,7 +46,9 @@ set_state() {                      # $1 dir  $2 0|1
       if (( DRYRUN == 1 )); then
         echo "DRY-RUN: cpu$id -> $tgt"
       else
-        echo "$tgt" > "$(ofile "$d")"
+        if ! echo "$tgt" > "$(ofile "$d")" 2>/dev/null; then
+          echo "WARNING: failed to set cpu$id state to $tgt (may be unavailable or already in requested state)" >&2
+        fi
       fi
     fi
 }
