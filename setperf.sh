@@ -97,21 +97,43 @@ preferred_governor_for_mode() {
 }
 
 show_status() {
-	if command -v powerprofilesctl >/dev/null 2>&1; then
-		echo " - powerprofilesctl:"
-		powerprofilesctl list
-		powerprofilesctl get
-	fi
+	local policy
 
-	if command -v cpupower >/dev/null 2>&1; then
-		echo " - cpupower:"
-		sudo cpupower frequency-info
-	fi
+	echo " - current cpufreq settings:"
+	for policy in /sys/devices/system/cpu/cpufreq/policy*; do
+		[[ -d "$policy" ]] || continue
+		local name gov epp min max drv
+		name="${policy##*/}"
+		gov="$(cat "$policy/scaling_governor" 2>/dev/null || echo "?")"
+		epp="$(cat "$policy/energy_performance_preference" 2>/dev/null || echo "n/a")"
+		min="$(cat "$policy/scaling_min_freq" 2>/dev/null || echo "?")"
+		max="$(cat "$policy/scaling_max_freq" 2>/dev/null || echo "?")"
+		drv="$(cat "$policy/scaling_driver" 2>/dev/null || echo "?")"
+		echo "   ${name}: driver=${drv} governor=${gov} epp=${epp} min=${min}kHz max=${max}kHz"
+	done
+}
 
-	echo " - cpufreq governors:"
-	cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor 2>/dev/null
-	grep . /sys/devices/system/cpu/cpufreq/policy*/scaling_driver 2>/dev/null
-	grep . /sys/devices/system/cpu/cpufreq/policy*/energy_performance_preference 2>/dev/null || true
+warn_if_frequency_range_constrained() {
+	local policy
+	local constrained=false
+
+	for policy in /sys/devices/system/cpu/cpufreq/policy*; do
+		[[ -d "$policy" ]] || continue
+		local min max hw_min hw_max
+		min="$(cat "$policy/scaling_min_freq" 2>/dev/null || echo "")"
+		max="$(cat "$policy/scaling_max_freq" 2>/dev/null || echo "")"
+		hw_min="$(cat "$policy/cpuinfo_min_freq" 2>/dev/null || echo "")"
+		hw_max="$(cat "$policy/cpuinfo_max_freq" 2>/dev/null || echo "")"
+		if [[ -n "$min" && -n "$max" && -n "$hw_min" && -n "$hw_max" ]] && (( min != hw_min || max != hw_max )); then
+			constrained=true
+			break
+		fi
+	done
+
+	if $constrained; then
+		echo "Note: CPU frequency range is constrained (min/max differs from hardware limits)."
+		echo "      setperf changes governor/EPP only; use pinfreq to adjust min/max range."
+	fi
 }
 
 show_supported_settings() {
@@ -212,3 +234,4 @@ TARGET_GOV="$(preferred_governor_for_mode "$MODE")" || {
 apply_with_sysfs "$TARGET_GOV"
 
 show_status
+warn_if_frequency_range_constrained
