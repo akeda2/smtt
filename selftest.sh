@@ -106,7 +106,7 @@ run_case "setperf invalid arg" 1 ./setperf.sh invalid
 run_case "setperf status no args" 0 ./setperf.sh
 
 run_case "pinfreq help" 0 ./pinfreq.sh -h
-run_case "pinfreq missing args" 1 ./pinfreq.sh
+run_case "pinfreq status no args" 0 ./pinfreq.sh
 run_case "pinfreq invalid lower" 1 ./pinfreq.sh foo
 run_case "pinfreq invalid upper" 1 ./pinfreq.sh 800 bar
 run_case "pinfreq reversed range" 1 ./pinfreq.sh 4500 800

@@ -105,7 +105,7 @@ Notes:
    - Frequencies are integers in MHz.
    - One value pins min=max to that value.
    - Two values set min/max range.
-   - Requires cpupower.
+   - With no arguments, prints current settings and possible ranges, then usage.
 ```
 
 ### pinfreq Examples

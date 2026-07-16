@@ -7,6 +7,42 @@ usage() {
     echo "  -y  Apply without confirmation prompt"
 }
 
+print_current_settings() {
+    local policy
+    echo "Current cpufreq settings:"
+    for policy in /sys/devices/system/cpu/cpufreq/policy*; do
+        [[ -d "$policy" ]] || continue
+        local name cur min max gov drv
+        name="${policy##*/}"
+        cur="$(cat "$policy/scaling_cur_freq" 2>/dev/null || echo "?")"
+        min="$(cat "$policy/scaling_min_freq" 2>/dev/null || echo "?")"
+        max="$(cat "$policy/scaling_max_freq" 2>/dev/null || echo "?")"
+        gov="$(cat "$policy/scaling_governor" 2>/dev/null || echo "?")"
+        drv="$(cat "$policy/scaling_driver" 2>/dev/null || echo "?")"
+        echo "  ${name}: driver=${drv} governor=${gov} cur=${cur}kHz min=${min}kHz max=${max}kHz"
+    done
+}
+
+print_possible_settings() {
+    local policy
+    echo "Possible cpufreq settings:"
+    for policy in /sys/devices/system/cpu/cpufreq/policy*; do
+        [[ -d "$policy" ]] || continue
+        local name hw_min hw_max
+        name="${policy##*/}"
+        hw_min="$(cat "$policy/cpuinfo_min_freq" 2>/dev/null || echo "?")"
+        hw_max="$(cat "$policy/cpuinfo_max_freq" 2>/dev/null || echo "?")"
+        echo "  ${name}: hardware range ${hw_min}-${hw_max}kHz"
+        if [[ -r "$policy/scaling_available_frequencies" ]]; then
+            local freqs
+            freqs="$(cat "$policy/scaling_available_frequencies" 2>/dev/null || true)"
+            if [[ -n "$freqs" ]]; then
+                echo "    available frequencies (kHz): ${freqs}"
+            fi
+        fi
+    done
+}
+
 mhz_to_khz() {
     echo $(( $1 * 1000 ))
 }
@@ -121,8 +157,12 @@ done
 shift $((OPTIND - 1))
 
 if [[ -z "$1" ]]; then
+    print_current_settings
+    echo
+    print_possible_settings
+    echo
     usage
-    exit 1
+    exit 0
 fi
 
 LOWER="$1"
