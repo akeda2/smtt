@@ -94,12 +94,34 @@ run_state_case() {
 
 echo "Running CLI self-tests..."
 
-run_case "bash syntax" 0 bash -n inst.sh smtt.sh turbot.sh sockt.sh
+run_case "bash syntax" 0 bash -n inst.sh smtt.sh turbot.sh sockt.sh setperf.sh pinfreq.sh ppws.sh
 run_case "sockt help" 0 ./sockt.sh -h
 run_case "sockt invalid option" 1 ./sockt.sh -z
 run_case "sockt dry-run offline non-zero" 0 ./sockt.sh -n -s
 run_case "sockt dry-run mapped limits" 0 ./sockt.sh -n -m 0:1
 run_case "sockt conflict guard" 1 ./sockt.sh -n -r -m 0:1
+
+run_case "setperf help" 0 ./setperf.sh -h
+run_case "setperf invalid arg" 1 ./setperf.sh invalid
+run_case "setperf status no args" 0 ./setperf.sh
+
+run_case "pinfreq help" 0 ./pinfreq.sh -h
+run_case "pinfreq missing args" 1 ./pinfreq.sh
+run_case "pinfreq invalid lower" 1 ./pinfreq.sh foo
+run_case "pinfreq invalid upper" 1 ./pinfreq.sh 800 bar
+run_case "pinfreq reversed range" 1 ./pinfreq.sh 4500 800
+
+if (( EUID == 0 )); then
+  run_case "ppws lock without wattage" 1 ./ppws.sh --lock
+  if compgen -G "/sys/class/powercap/intel-rapl:[0-9]*" > /dev/null; then
+    run_case "ppws show" 0 ./ppws.sh
+  else
+    echo "SKIP: ppws show (intel_rapl powercap zones not available)"
+    (( skip++ ))
+  fi
+else
+  run_case "ppws requires root" 1 ./ppws.sh
+fi
 
 run_case "smtt help" 0 ./smtt.sh h
 run_case "smtt invalid arg" 1 ./smtt.sh invalid
