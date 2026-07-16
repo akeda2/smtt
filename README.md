@@ -78,6 +78,7 @@ Behavior:
    - Prefers powerprofilesctl when available.
    - Falls back to cpupower, then cpufreq sysfs.
    - Prints current power/frequency status after applying.
+   - With no arguments, prints current settings and supported governors/EPP, then usage.
 ```
 
 ### setperf Examples
