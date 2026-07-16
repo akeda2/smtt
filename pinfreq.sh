@@ -133,9 +133,21 @@ confirm() {
         return 0
     fi
 
-    read -r -p "Continue? (y/n): " -n 1 reply
-    echo
-    [[ "$reply" =~ ^[Yy]$ ]]
+    local reply
+    while true; do
+        read -r -p "Continue? (y/n): " reply
+        case "${reply,,}" in
+            y|yes)
+                return 0
+                ;;
+            n|no)
+                return 1
+                ;;
+            *)
+                echo "Please answer y or n."
+                ;;
+        esac
+    done
 }
 
 ASSUME_YES=0
